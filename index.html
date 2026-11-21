@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive one-accumulator machine lab: run instructions, write programs and compare 1-, 2- and 3-address formats.">
+<meta name="theme-color" content="#070b16">
+<title>ACC Machine Lab – COA Project</title>
+<link rel="stylesheet" href="css/style.css"></head><body>
+<nav><div class="logo"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-linecap="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></svg><span class="grad">ACC Machine Lab</span></div>
+<div class="links"><a href="#home">Home</a><a href="#learn">Learn</a><a href="#interp">Interpreter</a><a href="#asm">Assembler</a><a href="#fmt">Formats</a><a href="#isa">Instruction Set</a><a href="#about">About</a><button class='op' id='thm' aria-label='Toggle theme'>◐</button></div></nav>
+<main>
+<section class="page" id="p-home">
+<div style="padding:24px 0"><span class="tag">COA · One‑accumulator interpreter</span>
+<h1>Run the machine.<br><span class="grad">See every bit move.</span></h1>
+<p class="mu" style="max-width:640px">Pick any instruction from the ALU, Logic Unit or Data‑move group, run it on the accumulator and memory, and watch the registers, flags and bits change. Then write a full assembly program and step through it cycle by cycle.</p>
+<a class="btn" href="#learn">Start the 2‑minute tour</a><a class="btn o" href="#interp">Open interpreter</a><div class='mu' style='margin-top:14px;font-size:14px'>✓ No sign‑up &nbsp; ✓ Nothing to install &nbsp; ✓ Works on phone and laptop</div></div>
+<div class="grid">
+<div class="card"><svg viewBox="0 0 24 24"><path d="M5 4h14l-5 8 5 8H5"/></svg><h3>ALU</h3><span class="mu">ADD, SUB, MUL, DIV, plus my extras MOD, INC, DEC, NEG.</span></div>
+<div class="card"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="5"/><circle cx="15" cy="12" r="5"/></svg><h3>Logic Unit</h3><span class="mu">AND, OR, NOT, plus XOR, SHL, SHR with changed‑bit markers.</span></div>
+<div class="card"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16M8 4v16"/></svg><h3>Data move</h3><span class="mu">LD, ST and LDI between ACC and 16 editable memory cells.</span></div>
+<div class="card"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg><h3>Control flow</h3><span class="mu">JMP, JZ, JN, labels and HLT for real loops and programs.</span></div>
+<div class="card"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><h3>1, 2 &amp; 3‑address</h3><span class="mu">Compile any expression for accumulator or multi‑register machines and compare them.</span></div>
+</div>
+<h2>How it works</h2><div class='grid'><div class='card'><span class='tag'>1</span><h3>Choose</h3><span class='mu'>Pick an action such as Add, Subtract or Multiply.</span></div><div class='card'><span class='tag'>2</span><h3>Run</h3><span class='mu'>Press Execute and the machine carries out your order.</span></div><div class='card'><span class='tag'>3</span><h3>Understand</h3><span class='mu'>Watch the screen, lockers and numbers change, with a plain‑English explanation.</span></div></div>
+<div class='card' style='margin-top:14px;text-align:center;background:linear-gradient(90deg,#22d3ee22,#8b5cf622)'><h3>New to computers?</h3><span class='mu'>Take the 2‑minute tour. Just a calculator and some lockers.</span><br><a class='btn' href='#learn'>Start the tour</a></div></section>
+
+<section class="page" id="p-interp">
+<h1>Interactive <span class="grad">interpreter</span></h1>
+<div class="card"><b>Word size:</b> <select id="mode"><option value="8">8‑bit unsigned (processor, wraps at 256)</option><option value="32">32‑bit signed (interpreter, 16‑bit view)</option></select>
+<div class="grp">ALU – arithmetic</div><div class="ops" data-g="ALU"></div>
+<div class="grp">Logic unit</div><div class="ops" data-g="LU"></div>
+<div class="grp">Data move</div><div class="ops" data-g="DM"></div>
+<div style="margin-top:12px"><span id="olab" class="mu">Operand</span> <input type="number" id="opnd" value="0"> <button class="btn" id="exe" style="margin:0">Execute</button> <button class="btn o" id="undo" style="margin:0">Undo</button> <button class="btn o" id="reset" style="margin:0">Reset</button></div>
+<p class="mu" id="desc" style="margin:8px 0 0"></p></div>
+<div class="regs"></div><div class="two" style="margin-top:10px">
+<div class="card"><h3>Last step</h3><div id="res" class="mu">Choose an instruction and press Execute.</div></div>
+<div class="card"><h3>Memory (edit any cell)</h3><div class="mem" id="mem"></div></div></div>
+<h2>Execution log</h2><div class="card scroll logb"><table><thead><tr><th>#</th><th>Instr</th><th>ACC</th><th>PC</th><th>MAR</th><th>MDR</th><th>Math</th></tr></thead><tbody class="log"></tbody></table></div>
+</section>
+
+<section class="page" id="p-asm">
+<h1>Assembly <span class="grad">program runner</span></h1>
+<p class="mu">One instruction per line. Use <code>label:</code>, <code>; comments</code> and <code>DATA addr value</code> to preload memory. Shares the same machine as the interpreter.</p>
+<div class="two"><div><select id="exsel"></select><textarea id="src" spellcheck="false"></textarea>
+<button class="btn" id="asm">Assemble</button><button class="btn o" id="step">Step</button><button class="btn o" id="run">Run all</button></div>
+<div><div class="regs"></div><div id="amsg" class="mono mu">Assemble to begin.</div><h3>Output</h3><div id="outp" class="mono mu">–</div></div></div>
+<h2>Trace</h2><div class="card scroll logb"><table><thead><tr><th>#</th><th>Instr</th><th>ACC</th><th>PC</th><th>MAR</th><th>MDR</th><th>Math</th></tr></thead><tbody class="log"></tbody></table></div>
+</section>
+
+<section class="page" id="p-fmt"><h1>Instruction <span class="grad">formats</span></h1>
+<p class="mu">Compile one expression into 1‑address (accumulator), 2‑address and 3‑address code. Then step through each on its own machine with registers R0, R1… and memory.</p>
+<div class="card"><b>Expression</b> <input id="fx" value="X = (A+B)*(C-D)" style="width:min(100%,300px)"> <button class="btn" id="fgo" style="margin:0">Compile</button>
+<div class="mu" style="margin:6px 0">Use + − * / , parentheses, numbers and single letters. Edit the values and recompile.</div><div id="fvars" class="grid"></div></div>
+<div class="grid" id="fcmp" style="margin-top:14px"></div>
+<div class="ops" id="ftabs" style="margin:14px 0 8px"></div>
+<div class="two"><div class="card"><h3>Program</h3><div id="fcode" class="mono"></div>
+<button class="btn" id="fstep">Step</button><button class="btn o" id="frun">Run all</button><button class="btn o" id="freset">Reset</button>
+<div style="margin-top:10px"><input id="fin" placeholder="try: ADD R1, A, B" style="width:68%"> <button class="op" id="ftry">Run one</button></div><p id="fmsg" class="mono mu"></p></div>
+<div class="card"><h3>Machine state</h3><div id="fstate"></div></div></div>
+<h2>Formats compared</h2><div class="card scroll"><table><thead><tr><th>Format</th><th>X = A + B</th><th>Notes</th></tr></thead><tbody><tr><td class="c">1‑address</td><td class="mono">LD A; ADD B; ST X</td><td>Short instructions, implicit ACC, more of them</td></tr><tr><td class="c">2‑address</td><td class="mono">MOV R0, A; ADD R0, B; MOV X, R0</td><td>Destination doubles as a source and is overwritten</td></tr><tr><td class="c">3‑address</td><td class="mono">ADD X, A, B</td><td>Fewest instructions, longest encoding, sources kept</td></tr></tbody></table></div></section>
+
+<section class='page' id='p-learn'><span class='tag'>Learn the basics</span><h1>How a computer <span class='grad'>thinks</span></h1>
+<p class='mu' style='max-width:640px'>A computer follows tiny orders one at a time. Here is the whole idea using a calculator and a row of lockers.</p>
+<div class='grid'><div class='card'><span class='tag'>Accumulator</span><h3>The calculator screen</h3><span class='mu'>Shows the number being worked on right now.</span></div><div class='card'><span class='tag'>Memory</span><h3>A row of lockers</h3><span class='mu'>Stores numbers until needed. Each locker has a number, its address.</span></div><div class='card'><span class='tag'>Instruction</span><h3>One order</h3><span class='mu'>ADD 2 means: add the number in locker 2 to the screen.</span></div><div class='card'><span class='tag'>Program</span><h3>A recipe</h3><span class='mu'>A list of orders carried out one after another.</span></div><div class='card'><span class='tag'>Registers</span><h3>Pockets on an apron</h3><span class='mu'>Extra fast spots for numbers, used by 2‑ and 3‑address machines.</span></div></div>
+<h2>Guided tour: add 3 + 5 and save it</h2><div class='card'><div class='regs' id='tscr'></div><p id='ttxt' style='font-size:18px;margin:8px 0'></p><button class='btn o' id='tback'>◀ Back</button><button class='btn' id='tnext'>Next ▶</button> <span id='tpos' class='mu'></span></div>
+<h2>Test yourself</h2><div id='quiz'></div>
+<h2>Glossary</h2><input id='gq' placeholder='Search a word…' style='width:min(100%,320px);margin-bottom:10px'><div class='grid' id='gl'></div>
+<h2>Questions people ask</h2>
+<details><summary>Is anything saved or sent anywhere?</summary><p class='mu'>No. Everything runs in your browser on your own device.</p></details>
+<details><summary>What are 1, 2 and 3‑address machines?</summary><p class='mu'>They are three ways to write the same order. The more places an instruction names, the fewer instructions the job needs. See the Formats page.</p></details>
+<details><summary>Why does the number jump back to 0 after 255?</summary><p class='mu'>An 8‑bit machine can only hold 256 values, like a car odometer rolling over.</p></details></section>
+
+<section class="page" id="p-isa"><h1>Instruction <span class="grad">set</span></h1>
+<p class="mu">X is a memory address (LD, ST, ALU and logic ops) or a value / label (LDI, jumps). The first nine are from the project; the rest are my extensions.</p>
+<div class="card scroll"><table><thead><tr><th>Op</th><th>Unit</th><th>Effect</th><th>Origin</th></tr></thead><tbody id="isa"></tbody></table></div></section>
+
+<section class="page" id="p-about"><h1>About the <span class="grad">project</span></h1>
+<div class="card"><h3>Problem</h3><span class="mu">Construct an interpreter for an assembly language on a machine with a single register, the accumulator, where all operands are in memory. Required: ADD, SUB, MUL, DIV, AND, OR, NOT, LD, ST.</span></div>
+<div class="two" style="margin-top:14px"><div class="card"><span class="tag">Accumulator machine</span><h3>Menu interpreter</h3><span class="mu">32‑bit signed ACC, 10 cells, flags and bit visualisation. Mirrored here by the Interpreter page.</span></div>
+<div class="card"><span class="tag">Processor machine</span><h3>8‑bit CPU</h3><span class="mu">Fetch‑decode‑execute with PC, IR, MAR, MDR, 256 bytes memory, HLT. Mirrored by the Assembler page and 8‑bit mode.</span></div></div>
+<h2>Cycle</h2><pre>FETCH   IR  ← instr[PC] ; PC ← PC + 1
+DECODE  opcode, operand ← IR
+EXECUTE MAR ← X ; MDR ← mem[MAR] ; ACC ← ACC op MDR
+FLAGS   ZERO ← (ACC = 0) ; NEG ← sign bit</pre>
+</section>
+</main><footer><div class='grid' style='text-align:left;max-width:1100px;margin:0 auto 16px'><div><b class='grad'>ACC Machine Lab</b><br>Learn how a computer thinks, one instruction at a time.</div><div><b>Explore</b><br><a href='#learn'>Learn</a> · <a href='#interp'>Interpreter</a> · <a href='#fmt'>Formats</a></div><div><b>Help</b><br><a href='#learn'>Glossary and FAQ</a> · <a href='#about'>About the project</a></div></div>Computer Organization &amp; Architecture · One‑accumulator machine lab</footer>
+<script src="js/interpreter.js"></script>
+<script src="js/assembler.js"></script>
+<script src="js/formats.js"></script>
+<script src="js/learn.js"></script>
+<script src="js/main.js"></script></body></html>
